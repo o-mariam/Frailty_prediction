@@ -12,6 +12,16 @@ This repository contains the implementation of a data processing pipeline design
 ## Dataset
 The dataset used in this project is composed of multiple CSV files. Each file contains physiological signals collected from older participants.
 
+## Data Processing Workflow
+The script processes each CSV file in the Dataset/Frail directory as follows:
+
+Load the data using Pandas.
+Preprocess physiological signals:
+Heart Signals: Discrete Wavelet Transform (DWT) is applied to denoise the heart rate (HR) and heart rate variability (HRV) signals.
+Accelerometer Data: Kalman filtering and a Butterworth filter are used to denoise the accelerometer data (X, Y, and Z axes).
+Extract statistical features for various physiological metrics (e.g., HR, HRV, RR, accelerometer data).
+Save the extracted features into a new CSV file in the Features directory.
+
 ## Directory Structure
 . ├── Dataset/ │ └── Frail/ # Directory containing input CSV files ├── Features/ # Directory for saving extracted features ├── ecg_preprocess.py # Module for ECG preprocessing ├── br_resp_preprocess.py # Module for respiratory preprocessing ├── kalman_filter.py # Module for Kalman filtering ├── windows.py # Module for windowing signals ├── main.py # Main script for processing data └── README.md # This file
 
