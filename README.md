@@ -12,3 +12,10 @@ The dataset used in this project is composed of multiple CSV from real word evid
 
 ## Directory Structure
 . ├── Dataset/ │ └── Frail/ # Directory containing input CSV files ├── Features/ # Directory for saving extracted features ├── ecg_preprocess.py # Module for ECG preprocessing ├── br_resp_preprocess.py # Module for respiratory preprocessing ├── kalman_filter.py # Module for Kalman filtering ├── windows.py # Module for windowing signals ├── main.py # Main script for processing data └── README.md # This file
+
+## Usage
+-To run the main processing script, execute the following command in your terminal:
+    python main.py
+
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
