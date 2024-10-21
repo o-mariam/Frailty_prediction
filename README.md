@@ -17,8 +17,9 @@ The script processes each CSV file in the Dataset/Frail directory as follows:
 
 Load the data using Pandas.
 Preprocess physiological signals:
-Heart Signals: Discrete Wavelet Transform (DWT) is applied to denoise the heart rate (HR) and heart rate variability (HRV) signals.
-Accelerometer Data: Kalman filtering and a Butterworth filter are used to denoise the accelerometer data (X, Y, and Z axes).
+- Heart Signals: Discrete Wavelet Transform (DWT) is applied to denoise the heart rate (HR) and heart rate variability (HRV) signals.
+- Accelerometer Data: Kalman filtering and a Butterworth filter are used to denoise the accelerometer data (X, Y, and Z axes).
+
 Extract statistical features for various physiological metrics (e.g., HR, HRV, RR, accelerometer data).
 Save the extracted features into a new CSV file in the Features directory.
 
