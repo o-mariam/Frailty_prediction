@@ -28,19 +28,30 @@ Extract statistical features for various physiological metrics (e.g., HR, HRV, R
 Save the extracted features into a new CSV file a Features directory.
 
 ## Directory Structure
-.   ├── Dataset/ 
-    │ └── Frail/ # Directory containing input CSV files 
-    ├── Features/ # Directory for saving extracted features 
-    │   ├── ecg_preprocess.py # Module for ECG preprocessing 
-    │   ├── br_resp_preprocess.py # Module for respiratory preprocessing 
-    │   ├── kalman_filter.py # Module for Kalman filtering 
-    │   ├── windows.py # Module for windowing signals 
-    │   ├── main.py # Main script for processing data 
-    └── README.md # This file
+```
+scr/
+│
+├── categories/
+│ ├── frail.py # Frailty case handling
+│ ├── non_frail.py # Non-frailty case handling
+│ └── pre_frail.py # Pre-frailty case handling
+│
+├── models/
+│ └── rf.py # Random Forest model implementation
+│
+├── preprocessing/
+│ ├── br_resp_preprocess.py # Respiratory signal preprocessing
+│ ├── ecg_preprocess.py # ECG signal preprocessing
+│ ├── feature_extraction.py # Feature extraction from signals
+│ ├── kalman_filter.py # Kalman filtering module
+│ └── windows.py # Signal windowing module
+│
+└── README.md # Project documentation
+```
 
-## Usage
--To run the main processing script, execute the following command in your terminal:
-    python main.py
+## ▶️ Usage
+Run the main processing script from the terminal:
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+python main.py
+
