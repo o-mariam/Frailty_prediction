@@ -50,8 +50,16 @@ scr/
 ```
 
 ## ▶️ Usage
-Run the main processing script from the terminal:
+Each frailty category has its own processing script. You need to run them individually:
 
 ```bash
-python main.py
+# Process frail cases
+python scr/categories/frail.py
+
+# Process non-frail cases
+python scr/categories/non_frail.py
+
+# Process pre-frail cases
+python scr/categories/pre_frail.py
+
 
