@@ -28,7 +28,15 @@ Extract statistical features for various physiological metrics (e.g., HR, HRV, R
 Save the extracted features into a new CSV file a Features directory.
 
 ## Directory Structure
-. ├── Dataset/ │ └── Frail/ # Directory containing input CSV files ├── Features/ # Directory for saving extracted features ├── ecg_preprocess.py # Module for ECG preprocessing ├── br_resp_preprocess.py # Module for respiratory preprocessing ├── kalman_filter.py # Module for Kalman filtering ├── windows.py # Module for windowing signals ├── main.py # Main script for processing data └── README.md # This file
+.   ├── Dataset/ 
+    │ └── Frail/ # Directory containing input CSV files 
+    ├── Features/ # Directory for saving extracted features 
+    │   ├── ecg_preprocess.py # Module for ECG preprocessing 
+    │   ├── br_resp_preprocess.py # Module for respiratory preprocessing 
+    │   ├── kalman_filter.py # Module for Kalman filtering 
+    │   ├── windows.py # Module for windowing signals 
+    │   ├── main.py # Main script for processing data 
+    └── README.md # This file
 
 ## Usage
 -To run the main processing script, execute the following command in your terminal:
