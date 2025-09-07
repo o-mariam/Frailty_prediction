@@ -10,11 +10,13 @@ from scipy.optimize import curve_fit
 from scipy.signal import butter, lfilter
 import warnings
 from scipy.optimize import OptimizeWarning
+from scipy.signal import butter, filtfilt
+
 warnings.simplefilter("ignore", category=OptimizeWarning)
 
 
 import numpy as np
-import numpy as np
+
 
 def setup_kalman(q, r, dt):
     A = np.array([[1, dt], [0, 1]])
@@ -54,7 +56,6 @@ time_step = 1 / sample_rate
 
 def filter_but(output):
     
-    from scipy.signal import butter, filtfilt
 
     fs=25
     cutoff_freq = 0.3 # Hz

@@ -86,7 +86,8 @@ for f in files:
                         features_rr.loc[len(features_rr)] = pd.Series(feat_rr, index=features_rr.columns)
                     print("feat_rr")
 
-                    from scr.preprocessing import br_resp_preprocess, ecg_preprocess
+                    from scr.preprocessing import br_resp_preprocess, ecg_preprocess, kalman_filter, feature_extraction, \
+                        windows
 
                     br=frail['br']
                     out4= br_resp_preprocess.d_wavelet(br, 'sym5', 1)
@@ -112,13 +113,11 @@ for f in files:
 
                 ########          For the accelerometer data
 
-                    from scr import kalman_filter, feature_extraction, windows
-
                     xa=frail['acc_x']
 
                     ## Split windows 
 
-                    import scr.windows
+                    import scr.preprocessing.windows
 
                     xa_w= windows.split_into_windows(xa, 120)
 
