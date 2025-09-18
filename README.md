@@ -34,7 +34,8 @@ scr/
 ├── categories/
 │ ├── frail.py # Frailty case handling
 │ ├── non_frail.py # Non-frailty case handling
-│ └── pre_frail.py # Pre-frailty case handling
+  ├── pre_frail.py # Pre-frailty case handling
+│ └── utils.py
 │
 ├── models/
 │ └── rf.py # Random Forest model implementation
@@ -43,7 +44,7 @@ scr/
 │ ├── br_resp_preprocess.py # Respiratory signal preprocessing
 │ ├── ecg_preprocess.py # ECG signal preprocessing
 │ ├── feature_extraction.py # Feature extraction from signals
-│ ├── kalman_filter.py # Kalman filtering module
+│ ├── accelerometer_filter.py # Kalman and Butterworth filtering module
 │ └── windows.py # Signal windowing module
 │
 └── README.md # Project documentation
