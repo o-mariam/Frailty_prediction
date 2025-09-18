@@ -7,7 +7,7 @@ from sklearn import preprocessing
 from pathlib import Path
 
 
-path = Path("C:\\Users\\Admin\\Ceid\\ΔΙΠΛΩΜΑΤΙΚΗ\\wwsx_matlab\\Dataset\\Pre-frail")
+path = Path("..\\Dataset\\Pre-frail")
 
 files = path.glob("*.csv")
 

@@ -2,17 +2,13 @@ import numpy as np
 import pandas as pd
 
 import os
-from sklearn import preprocessing
+
 
 from pathlib import Path
 
 
-# files = glob.glob("C:\\Users\\kleas\\OneDrive\\Έγγραφα\\Ceid\\ΔΙΠΛΩΜΑΤΙΚΗ\\wwsx_matlab\\Dataset\\Frail\\*.csv")
 
-
-# path = Path("C:\\Users\\kleas\\OneDrive\\Έγγραφα\\Ceid\\ΔΙΠΛΩΜΑΤΙΚΗ\\wwsx_matlab\\Dataset\\Frail")
-
-path = Path("C:\\Users\\Admin\\Ceid\\ΔΙΠΛΩΜΑΤΙΚΗ\\wwsx_matlab\\Dataset\\n")
+path = Path("..\\Dataset\\n")
 
 files = path.glob("*.csv")
 

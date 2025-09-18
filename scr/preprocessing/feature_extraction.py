@@ -16,8 +16,9 @@ def approximate_entropy(signal):
         signal = np.concatenate([signal, np.zeros(min_len - len(signal))])
     return p.ap_entropy(signal, 2, 0.2*np.std(signal))
 
-# def approximate_entropy(signal):
-#     return p.ap_entropy(signal, 2, 0.2*np.std(signal))
+
+
+
 def extract_statistical_features(data):
     
     features = []
