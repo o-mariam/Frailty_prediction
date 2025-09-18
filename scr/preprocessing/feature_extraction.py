@@ -1,12 +1,6 @@
 import numpy as np
 from scipy.stats import skew, kurtosis, entropy
 from scipy.stats import mode
-import pandas as pd
-
-
-from scipy.stats import entropy
-
-
 import pyeeg.pyeeg as p
 
 def approximate_entropy(signal):

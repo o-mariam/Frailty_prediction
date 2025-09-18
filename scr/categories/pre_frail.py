@@ -1,224 +1,147 @@
+import os
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
-import os
-from sklearn import preprocessing
+from scr.preprocessing.feature_extraction import extract_statistical_features as features
+from scr.preprocessing.ecg_preprocess import d_wavelet as ecg_wavelet
+from scr.preprocessing.br_resp_preprocess import d_wavelet as br_resp_wavelet
+from scr.preprocessing import kalman_filter, windows  # moved up so it's available before first use
 
-from pathlib import Path
-
-
-path = Path("..\\Dataset\\Pre-frail")
-
+path = Path(r"...\Dataset\Pre_Frail")
 files = path.glob("*.csv")
 
-
-
-for f in files:
-
+for file in files:
     try:
-        filepath = os.path.join(path, f)
+        # use a consistent, concrete path string for os.* calls
+        filepath = str(file)
 
-        if os.path.isfile(f):
-            with open(f, newline='') as csvfile:
-                                        
-                    features_z=pd.DataFrame(columns=['az_avg', 'az_std', 'az_p5', 'az_p95', 'az_mode_val', 'az_skew_val', 'az_kurt_val', 'az_energy', 'az_entropy_val'])
-                    features_x=pd.DataFrame(columns=['ax_avg', 'ax_std', 'ax_p5', 'ax_p95', 'ax_mode_val', 'ax_skew_val', 'ax_kurt_val', 'ax_energy', 'ax_entropy_val'])
-                    features_y=pd.DataFrame(columns=['ay_avg', 'ay_std', 'ay_p5', 'ay_p95', 'ay_mode_val', 'ay_skew_val', 'ay_kurt_val', 'ay_energy', 'ay_entropy_val'])
-                    features_hr=pd.DataFrame(columns=['hr_avg', 'hr_std', 'hr_p5', 'hr_p95', 'hr_mode_val', 'hr_skew_val', 'hr_kurt_val', 'hr_energy', 'hr_entropy_val'])
-                    features_hrv=pd.DataFrame(columns=['hrv_avg', 'hrv_std', 'hrv_p5', 'hrv_p95', 'hrv_mode_val', 'hrv_skew_val', 'hrv_kurt_val', 'hrv_energy', 'hrv_entropy_val'])
-                    features_rr=pd.DataFrame(columns=['rr_avg', 'rr_std', 'rr_p5', 'rr_p95', 'rr_mode_val', 'rr_skew_val', 'rr_kurt_val', 'rr_energy', 'rr_entropy_val'])
-                    features_br=pd.DataFrame(columns=['br_avg', 'br_std', 'br_p5', 'br_p95', 'br_mode_val', 'br_skew_val', 'br_kurt_val', 'br_energy', 'br_entropy_val'])
-                    features_resp=pd.DataFrame(columns=['resp_avg', 'resp_std', 'resp_p5', 'resp_p95', 'resp_mode_val', 'resp_skew_val', 'resp_kurt_val', 'resp_energy', 'resp_entropy_val'])
-                    label=pd.DataFrame(columns=['Y'])
-                    Id=pd.DataFrame(columns=['part_id'])
-                    
-                    frail=pd.read_csv(csvfile,low_memory=False)
+        if os.path.isfile(filepath):
+            with open(filepath, newline='') as csvfile:
+                # predeclare dataframes (unchanged)
+                features_z = pd.DataFrame(columns=['az_avg', 'az_std', 'az_p5', 'az_p95', 'az_mode_val', 'az_skew_val', 'az_kurt_val', 'az_energy', 'az_entropy_val'])
+                features_x = pd.DataFrame(columns=['ax_avg', 'ax_std', 'ax_p5', 'ax_p95', 'ax_mode_val', 'ax_skew_val', 'ax_kurt_val', 'ax_energy', 'ax_entropy_val'])
+                features_y = pd.DataFrame(columns=['ay_avg', 'ay_std', 'ay_p5', 'ay_p95', 'ay_mode_val', 'ay_skew_val', 'ay_kurt_val', 'ay_energy', 'ay_entropy_val'])
+                features_hr = pd.DataFrame(columns=['hr_avg', 'hr_std', 'hr_p5', 'hr_p95', 'hr_mode_val', 'hr_skew_val', 'hr_kurt_val', 'hr_energy', 'hr_entropy_val'])
+                features_hrv = pd.DataFrame(columns=['hrv_avg', 'hrv_std', 'hrv_p5', 'hrv_p95', 'hrv_mode_val', 'hrv_skew_val', 'hrv_kurt_val', 'hrv_energy', 'hrv_entropy_val'])
+                features_rr = pd.DataFrame(columns=['rr_avg', 'rr_std', 'rr_p5', 'rr_p95', 'rr_mode_val', 'rr_skew_val', 'rr_kurt_val', 'rr_energy', 'rr_entropy_val'])
+                features_br = pd.DataFrame(columns=['br_avg', 'br_std', 'br_p5', 'br_p95', 'br_mode_val', 'br_skew_val', 'br_kurt_val', 'br_energy', 'br_entropy_val'])
+                features_resp = pd.DataFrame(columns=['resp_avg', 'resp_std', 'resp_p5', 'resp_p95', 'resp_mode_val', 'resp_skew_val', 'resp_kurt_val', 'resp_energy', 'resp_entropy_val'])
+                label = pd.DataFrame(columns=['Y'])
+                Id = pd.DataFrame(columns=['part_id'])
 
+                frail = pd.read_csv(csvfile, low_memory=False)
 
+                filename = str(file)
+                print(filename)
+                filename = filename.rsplit("\\")[-1]
 
-                    filename=str(f)
-                    print(filename)
-                    
-                #     print(filename)
-                    filename=filename.rsplit("\\")[-1]
+                # ---------- ECG HR ----------
+                hr = frail['ecg_hr']
+                out1 = ecg_wavelet(hr, 'sym5', 1)
+                hr_w = windows.split_into_windows(out1, 120)
 
-                    hr=frail['ecg_hr']
-                    out1= ecg_preprocess.d_wavelet(hr, 'sym5', 1)
-                    hr_w= windows.split_into_windows(out1, 120)
+                for i, w in enumerate(hr_w):
+                    part_id = frail['part_id'].iloc[0]
+                    Id.loc[len(Id)] = pd.Series(part_id, index=Id.columns)
 
-                    for i,w in enumerate(hr_w):
+                    Y = 'Frail'
+                    label.loc[len(label)] = pd.Series(Y, index=label.columns)
 
-                                part_id=frail['part_id'].iloc[0]
-                                Id.loc[len(Id)] = pd.Series(part_id, index=Id.columns)
+                    feat_hr = features(w)
+                    features_hr.loc[len(features_hr)] = pd.Series(feat_hr, index=features_hr.columns)
 
+                print("features_hr")
+                print("ID")
 
-                        #    Create the array with the label of the patient
+                # ---------- ECG HRV ----------
+                hrvv = frail['ecg_hrv']
+                out2 = ecg_wavelet(hrvv, 'sym5', 1)
+                hrv_w = windows.split_into_windows(out2, 120)
 
-                                Y='Pre_frail'
-                                label.loc[len(label)] = pd.Series(Y, index=label.columns)                                
-                                feat_hr=f.extract_statistical_features(w)
-                                features_hr.loc[len(features_hr)] = pd.Series(feat_hr, index=features_hr.columns)
+                for i, w in enumerate(hrv_w):
+                    feat_hrv = features(w)
+                    features_hrv.loc[len(features_hrv)] = pd.Series(feat_hrv, index=features_hrv.columns)
+                print("feat_hrv")
 
-                    print("features_hr")
+                # ---------- ECG RR ----------
+                rr = frail['ecg_rr']
+                out3 = ecg_wavelet(rr, 'sym5', 1)
+                rr_w = windows.split_into_windows(out3, 120)
 
-                    print("ID")
+                for i, w in enumerate(rr_w):
+                    feat_rr = features(w)
+                    features_rr.loc[len(features_rr)] = pd.Series(feat_rr, index=features_rr.columns)
+                print("feat_rr")
 
+                # ---------- BR ----------
+                br = frail['br']
+                out4 = br_resp_wavelet(br, 'sym5', 1)
+                br_w = windows.split_into_windows(out4, 120)
 
+                for i, w in enumerate(br_w):
+                    feat_br = features(w)
+                    features_br.loc[len(features_br)] = pd.Series(feat_br, index=features_br.columns)
+                print("feat_br")
 
+                # ---------- RESP PIEZO ----------
+                resp = frail['resp_piezo']
+                out5 = br_resp_wavelet(resp, 'sym5', 1)
+                resp_w = windows.split_into_windows(out5, 120)
 
-                    hrvv=frail['ecg_hrv']
-                    out2= ecg_preprocess.d_wavelet(hrvv, 'sym5', 1)
-                    hrv_w= windows.split_into_windows(out2, 120)
+                for i, w in enumerate(resp_w):
+                    feat_resp = features(w)
+                    features_resp.loc[len(features_resp)] = pd.Series(feat_resp, index=features_resp.columns)
+                print("feat_resp")
 
-                    for i,w in enumerate(hrv_w):
+                # ---------- Accelerometer ----------
+                xa = frail['acc_x']
+                xa_w = windows.split_into_windows(xa, 120)
+                for i, w in enumerate(xa_w):
+                    ax = np.array(w).reshape(-1, 1)
+                    kf = kalman_filter.KalmanFilter(q=0.001, r=0.1, dt=1 / 25)
+                    filtered = kf.filter(ax)
+                    filtered = kalman_filter.filter_but(filtered)
+                    feat_acc = features(filtered)
+                    features_x.loc[len(features_x)] = pd.Series(feat_acc, index=features_x.columns)
+                print("x")
 
+                xa = frail['acc_y']
+                xa_w = windows.split_into_windows(xa, 120)
+                for i, w in enumerate(xa_w):
+                    ax = np.array(w).reshape(-1, 1)
+                    kf = kalman_filter.KalmanFilter(q=0.001, r=0.1, dt=1 / 25)
+                    filtered = kf.filter(ax)
+                    filtered = kalman_filter.filter_but(filtered)
+                    feat_acc = features(filtered)
+                    features_y.loc[len(features_y)] = pd.Series(feat_acc, index=features_y.columns)
+                print("y")
 
-                        feat_hrv=f.extract_statistical_features(w)
-                        features_hrv.loc[len(features_hrv)] = pd.Series(feat_hrv, index=features_hrv.columns)
-                    print("feat_hrv")
-                    rr=frail['ecg_rr']
-                    out3= ecg_preprocess.d_wavelet(rr, 'sym5', 1)
-                    rr_w= windows.split_into_windows(out3, 120)
+                xa = frail['acc_z']
+                xa_w = windows.split_into_windows(xa, 120)
+                for i, w in enumerate(xa_w):
+                    ax = np.array(w).reshape(-1, 1)
+                    kf = kalman_filter.KalmanFilter(q=0.001, r=0.1, dt=1 / 25)
+                    filtered = kf.filter(ax)
+                    filtered = kalman_filter.filter_but(filtered)
+                    feat_acc = features(filtered)
+                    features_z.loc[len(features_z)] = pd.Series(feat_acc, index=features_z.columns)
+                print("z")
 
-                    for i,w in enumerate(rr_w):
+                merged_df = pd.concat(
+                    [Id, features_x, features_y, features_z, features_hr, features_hrv, features_rr, features_br, features_resp, label],
+                    axis=1
+                )
+                merged_df.to_csv(r"...\Features\Pre_Frail\\" + filename)
 
-                        feat_rr=f.extract_statistical_features(w)
-                        features_rr.loc[len(features_rr)] = pd.Series(feat_rr, index=features_rr.columns)
-                    print("feat_rr")
+            # optional: directory var (unused) kept near related logic for clarity
+            directory = r"...\Dataset\Pre_Frail"
 
-                    from scr.preprocessing import br_resp_preprocess, ecg_preprocess, kalman_filter, feature_extraction, \
-                        windows
-
-                    br=frail['br']
-                    out4= br_resp_preprocess.d_wavelet(br, 'sym5', 1)
-                    br_w= windows.split_into_windows(out4, 120)
-
-                    for i,w in enumerate(br_w):
-
-
-                        feat_br=f.extract_statistical_features(w)
-                        features_br.loc[len(features_br)] = pd.Series(feat_br, index=features_br.columns)
-                    print("feat_br")
-                    resp=frail['resp_piezo']
-                    out5= br_resp_preprocess.d_wavelet(resp, 'sym5', 1)
-                    resp_w= windows.split_into_windows(out5, 120)
-
-                    for i,w in enumerate(resp_w):
-
-                        feat_resp=f.extract_statistical_features(w)
-                        features_resp.loc[len(features_resp)] = pd.Series(feat_resp, index=features_resp.columns)
-
-                    print("feat_resp")
-
-
-                ########          For the accelerometer data
-
-                    xa=frail['acc_x']
-
-                    ## Split windows 
-
-                    import scr.preprocessing.windows
-
-                    xa_w= windows.split_into_windows(xa, 120)
-
-                    for i,w in enumerate(xa_w):
-
-                        ax=np.array(w)
-                        ax=ax.reshape(-1,1)
-                        kf = kalman_filter.KalmanFilter(q=0.001, r=0.1, dt=1 / 25)
-                        filtered = kf.filter(ax)
-                        filtered= kalman_filter.filter_but(filtered)
-
-
-                        feat_acc=f.extract_statistical_features(filtered)
-                        features_x.loc[len(features_x)] = pd.Series(feat_acc, index=features_x.columns)
-
-                    print("x")
-
-
-                    xa=frail['acc_y']
-
-                    xa_w= windows.split_into_windows(xa, 120)
-                    for i,w in enumerate(xa_w):
-
-                        ax=np.array(w)
-                        ax=ax.reshape(-1,1)
-                        kf = kalman_filter.KalmanFilter(q=0.001, r=0.1, dt=1 / 25)
-                        filtered = kf.filter(ax)
-                        filtered= kalman_filter.filter_but(filtered)
-
-
-                        feat_acc=f.extract_statistical_features(filtered)
-                        features_y.loc[len(features_y)] = pd.Series(feat_acc, index=features_y.columns)
-
-                    print("y")
-
-
-                    xa=frail['acc_z']
-
-                    xa_w= windows.split_into_windows(xa, 120)
-
-                    for i,w in enumerate(xa_w):
-     
-                        ax=np.array(w)
-                        ax=ax.reshape(-1,1)
-                        kf = kalman_filter.KalmanFilter(q=0.001, r=0.1, dt=1 / 25)
-                        filtered = kf.filter(ax)
-                        filtered= kalman_filter.filter_but(filtered)
-
-
-                        feat_acc=f.extract_statistical_features(filtered)
-                        features_z.loc[len(features_z)] = pd.Series(feat_acc, index=features_z.columns)
-
-                    print("z")
-
-
-  
-
-                    merged_df = pd.concat([Id,features_x, features_y, features_z,features_hr,features_hrv,features_rr,features_br,features_resp,label], axis=1)
-
-                    merged_df.to_csv('C:\\Users\\Admin\\Ceid\\ΔΙΠΛΩΜΑΤΙΚΗ\\wwsx_matlab\\Features\\Pfrail\\' + filename)
-                    
-            directory = "C:\\Users\\Admin\\Ceid\\ΔΙΠΛΩΜΑΤΙΚΗ\\wwsx_matlab\\Dataset\\p"
-
-            csvfile.close()
-
+            # file closed by 'with' already; keeping deletion logic as-is
             os.remove(filepath)
             print(f"File {filename} deleted successfully.")
 
-
     except Exception as e:
-            print(f"Error processing {f}: {e}")
-
-                
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        # features_list=[ 'hr_avg', 'hr_std', 'hr_p5', 'hr_p95', 'hr_mode_val', 'hr_skew_val', 'hr_kurt_val', 'hr_energy', 'hr_entropy_val',
-        #                 'hrv_avg', 'hrv_std', 'hrv_p5', 'hrv_p95', 'hrv_mode_val', 'hrv_skew_val', 'hrv_kurt_val', 'hrv_energy', 'hrv_entropy_val',
-        #                 'rr_avg', 'rr_std', 'rr_p5', 'rr_p95', 'rr_mode_val', 'rr_skew_val', 'rr_kurt_val', 'rr_energy', 'rr_entropy_val',
-        #                 'br_avg', 'br_std', 'br_p5', 'br_p95', 'br_mode_val', 'br_skew_val', 'br_kurt_val', 'br_energy', 'br_entropy_val',
-        #                 'ba_avg', 'ba_std', 'ba_p5', 'ba_p95', 'ba_mode_val', 'ba_skew_val', 'ba_kurt_val', 'ba_energy', 'ba_entropy_val',
-        #                 'resp_avg', 'resp_std', 'resp_p5', 'resp_p95', 'resp_mode_val', 'resp_skew_val', 'resp_kurt_val', 'resp_energy', 'resp_entropy_val',
-        #                 'ax_avg', 'ax_std', 'ax_p5', 'ax_p95', 'ax_mode_val', 'ax_skew_val', 'ax_kurt_val', 'ax_energy', 'ax_entropy_val'
-        #                 'ay_avg', 'ay_std', 'ay_p5', 'ay_p95', 'ay_mode_val', 'ay_skew_val', 'ay_kurt_val', 'ay_energy', 'ay_entropy_val',
-        #                 'az_avg', 'az_std', 'az_p5', 'az_p95', 'az_mode_val', 'az_skew_val', 'az_kurt_val', 'az_energy', 'az_entropy_val']
+        print(f"Error processing {file}: {e}")
+        pass
