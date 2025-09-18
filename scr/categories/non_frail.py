@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 
@@ -8,17 +5,15 @@ from scr.preprocessing.feature_extraction import extract_statistical_features as
 from scr.preprocessing.ecg_preprocess import d_wavelet as ecg_wavelet
 from scr.preprocessing.br_resp_preprocess import d_wavelet as br_resp_wavelet
 from scr.preprocessing import kalman_filter, windows  # moved up so it's available before first use
+from scr.categories.utils import get_category_paths
 
-path = Path(r"...\Dataset\Non_Frail")
-files = path.glob("*.csv")
+raw_dir, feature_dir = get_category_paths("Non_Frail")
+files = raw_dir.glob("*.csv")
 
 for file in files:
     try:
-        # use a consistent, concrete path string for os.* calls
-        filepath = str(file)
-
-        if os.path.isfile(filepath):
-            with open(filepath, newline='') as csvfile:
+        if file.is_file():
+            with file.open(newline='') as csvfile:
                 # predeclare dataframes (unchanged)
                 features_z = pd.DataFrame(columns=['az_avg', 'az_std', 'az_p5', 'az_p95', 'az_mode_val', 'az_skew_val', 'az_kurt_val', 'az_energy', 'az_entropy_val'])
                 features_x = pd.DataFrame(columns=['ax_avg', 'ax_std', 'ax_p5', 'ax_p95', 'ax_mode_val', 'ax_skew_val', 'ax_kurt_val', 'ax_energy', 'ax_entropy_val'])
@@ -33,9 +28,8 @@ for file in files:
 
                 frail = pd.read_csv(csvfile, low_memory=False)
 
-                filename = str(file)
-                print(filename)
-                filename = filename.rsplit("\\")[-1]
+                filename = file.name
+                print(file)
 
                 # ---------- ECG HR ----------
                 hr = frail['ecg_hr']
@@ -133,13 +127,10 @@ for file in files:
                     [Id, features_x, features_y, features_z, features_hr, features_hrv, features_rr, features_br, features_resp, label],
                     axis=1
                 )
-                merged_df.to_csv(r"...\Features\Non_Frail\\" + filename)
+                output_path = (feature_dir / filename).resolve()
+                merged_df.to_csv(output_path)
 
-            # optional: directory var (unused) kept near related logic for clarity
-            directory = r"...\Dataset\Non_Frail"
-
-            # file closed by 'with' already; keeping deletion logic as-is
-            os.remove(filepath)
+            file.unlink()
             print(f"File {filename} deleted successfully.")
 
     except Exception as e:
